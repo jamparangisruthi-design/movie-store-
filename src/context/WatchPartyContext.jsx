@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { getSocket } from '../services/socket';
 import { webrtcService } from '../services/webrtc';
 import { playSoundEffect } from '../services/sound';
-import { INITIAL_MOVIES, INITIAL_ROOMS, INITIAL_FRIENDS } from '../../server/data/initialData.js';
+import { INITIAL_MOVIES, INITIAL_ROOMS, INITIAL_FRIENDS } from '../data/initialData.js';
 
 const WatchPartyContext = createContext();
 

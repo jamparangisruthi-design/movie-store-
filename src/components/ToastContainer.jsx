@@ -1,11 +1,11 @@
 import React from 'react';
-import { useStore } from '../context/StoreContext';
+import { useWatchParty } from '../context/WatchPartyContext';
 import { CheckCircle2, AlertTriangle, Info, X } from 'lucide-react';
 
 export const ToastContainer = () => {
-  const { toasts, removeToast } = useStore();
+  const { toasts, removeToast } = useWatchParty();
 
-  if (toasts.length === 0) return null;
+  if (!toasts || toasts.length === 0) return null;
 
   return (
     <div className="toast-container">
