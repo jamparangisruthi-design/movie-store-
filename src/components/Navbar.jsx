@@ -1,272 +1,187 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useStore } from '../context/StoreContext';
+import React, { useState } from 'react';
+import { useWatchParty } from '../context/WatchPartyContext';
 import { 
-  Film, 
+  Tv, 
   Search, 
-  ShoppingBag, 
+  Bell, 
   Bookmark, 
-  Volume2, 
-  VolumeX, 
-  Globe, 
-  Key, 
+  Users, 
+  History, 
+  Plus, 
+  Shield, 
   Sparkles,
-  SlidersHorizontal,
+  Compass,
+  Film,
   X
 } from 'lucide-react';
-import { CURRENCIES } from '../data/moviesData';
 
 export const Navbar = () => {
-  const {
-    cart,
-    watchlist,
-    library,
-    activeRentals,
-    currency,
-    setCurrency,
-    soundEnabled,
-    setSoundEnabled,
-    isLiveTmdb,
-    openModal,
-    filters,
-    setFilters,
-    formatPrice,
-    movies
-  } = useStore();
+  const { 
+    currentView, 
+    setCurrentView, 
+    notifications, 
+    friends, 
+    watchlist, 
+    currentUser, 
+    setModals,
+    joinRoom
+  } = useWatchParty();
 
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
-  const [searchValue, setSearchValue] = useState(filters.search);
-  const searchInputRef = useRef(null);
-  const dropdownRef = useRef(null);
+  const [showNotifications, setShowNotifications] = useState(false);
 
-  // Handle scroll backdrop
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 40);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Keyboard shortcut '/' to focus search
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === '/' && document.activeElement !== searchInputRef.current) {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // Close search dropdown on click outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target) && !searchInputRef.current?.contains(e.target)) {
-        setShowSearchDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleSearchChange = (e) => {
-    const val = e.target.value;
-    setSearchValue(val);
-    setFilters(prev => ({ ...prev, search: val }));
-    setShowSearchDropdown(val.trim().length > 0);
-  };
-
-  const handleClearSearch = () => {
-    setSearchValue('');
-    setFilters(prev => ({ ...prev, search: '' }));
-    setShowSearchDropdown(false);
-  };
-
-  const quickSearchResults = searchValue.trim() 
-    ? movies.filter(m => m.title.toLowerCase().includes(searchValue.toLowerCase()) || m.genres.some(g => g.toLowerCase().includes(searchValue.toLowerCase()))).slice(0, 5)
-    : [];
-
-  const totalCartCount = cart.length;
-  const totalVaultCount = library.length + activeRentals.length;
+  const pendingFriendCount = 1;
+  const activeRoomsCount = friends.filter(f => f.status === 'WATCHING').length;
 
   return (
-    <header className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
+    <header className="navbar">
       <div className="nav-wrapper">
         {/* Brand */}
-        <a href="#" className="nav-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <div className="brand-icon">
-            <Film size={22} />
+        <div 
+          className="nav-brand"
+          onClick={() => setCurrentView('home')}
+        >
+          <div style={{
+            width: '38px',
+            height: '38px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #e50914 0%, #6366f1 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 0 16px rgba(229, 9, 20, 0.4)'
+          }}>
+            <Tv size={20} color="#fff" />
           </div>
-          <span>CINE<span className="brand-vault">VAULT</span></span>
-        </a>
+          <div>
+            <span style={{ fontWeight: 900 }}>Watch<span className="brand-gradient">Together</span></span>
+            <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 500, letterSpacing: '0.02em', marginTop: '-3px' }}>
+              One Screen. Many Friends. One Experience.
+            </div>
+          </div>
+        </div>
 
-        {/* Nav Links */}
+        {/* Center Nav Links */}
         <nav className="nav-links">
-          <a href="#featured" className="nav-link">Spotlight</a>
-          <a href="#trending" className="nav-link">Trending</a>
-          <a href="#store-4k" className="nav-link">4K UHD Store</a>
-          <a href="#rentals" className="nav-link">Weekend Deals</a>
-          <a href="#cinepass" className="nav-link">CinePass VIP</a>
-          <a href="#explore-hub" className="nav-link">Catalog</a>
+          <span 
+            className={`nav-link ${currentView === 'home' ? 'active' : ''}`}
+            onClick={() => setCurrentView('home')}
+          >
+            Home
+          </span>
+          <span 
+            className={`nav-link ${currentView === 'search' ? 'active' : ''}`}
+            onClick={() => setCurrentView('search')}
+          >
+            Discover
+          </span>
+          <span 
+            className={`nav-link ${currentView === 'watchlist' ? 'active' : ''}`}
+            onClick={() => setCurrentView('watchlist')}
+          >
+            Watchlist ({watchlist.length})
+          </span>
+          <span 
+            className="nav-link"
+            onClick={() => setModals(prev => ({ ...prev, friends: true }))}
+          >
+            Friends
+            {activeRoomsCount > 0 && (
+              <span style={{ marginLeft: '4px', background: '#10b981', color: '#000', fontSize: '0.65rem', fontWeight: 800, padding: '1px 6px', borderRadius: '8px' }}>
+                {activeRoomsCount} live
+              </span>
+            )}
+          </span>
+          <span 
+            className={`nav-link ${currentView === 'history' ? 'active' : ''}`}
+            onClick={() => setCurrentView('history')}
+          >
+            History
+          </span>
         </nav>
 
-        {/* Actions & Search */}
-        <div className="nav-actions">
-          {/* Live Search */}
-          <div className="search-wrapper" style={{ position: 'relative' }}>
-            <Search size={16} className="search-icon-left" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Search 4K movies, cast, genres..."
-              className="search-input"
-              value={searchValue}
-              onChange={handleSearchChange}
-              onFocus={() => { if (searchValue.trim()) setShowSearchDropdown(true); }}
-            />
-            {searchValue ? (
-              <button 
-                onClick={handleClearSearch}
-                style={{ position: 'absolute', right: 12, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
-              >
-                <X size={14} />
-              </button>
-            ) : (
-              <span className="search-shortcut-badge">/</span>
-            )}
+        {/* Right Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Admin Dashboard */}
+          <button
+            className="btn-icon"
+            onClick={() => setModals(prev => ({ ...prev, admin: true }))}
+            title="Admin Dashboard & Metrics"
+          >
+            <Shield size={18} color="#94a3b8" />
+          </button>
 
-            {/* Quick Search Autocomplete Dropdown */}
-            {showSearchDropdown && quickSearchResults.length > 0 && (
+          {/* Notifications */}
+          <div style={{ position: 'relative' }}>
+            <button
+              className="btn-icon"
+              onClick={() => setShowNotifications(!showNotifications)}
+              title="Notifications"
+            >
+              <Bell size={18} color="#94a3b8" />
+              {notifications.length > 0 && (
+                <span style={{ position: 'absolute', top: '2px', right: '2px', width: '8px', height: '8px', borderRadius: '50%', background: '#e50914' }} />
+              )}
+            </button>
+
+            {/* Notifications Popover */}
+            {showNotifications && (
               <div 
-                ref={dropdownRef}
                 className="glass-panel"
                 style={{
                   position: 'absolute',
-                  top: 'calc(100% + 8px)',
-                  left: 0,
+                  top: 'calc(100% + 10px)',
+                  right: 0,
                   width: '320px',
+                  padding: '16px',
                   zIndex: 200,
-                  padding: '8px',
-                  boxShadow: '0 12px 36px rgba(0,0,0,0.8)'
+                  boxShadow: '0 16px 48px rgba(0,0,0,0.9)'
                 }}
               >
-                <div style={{ padding: '6px 10px', fontSize: '0.75rem', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                  Quick Search Matches
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px' }}>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 800 }}>Notifications</span>
+                  <button onClick={() => setShowNotifications(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
+                    <X size={14} />
+                  </button>
                 </div>
-                {quickSearchResults.map(m => (
-                  <div
-                    key={m.id}
-                    onClick={() => {
-                      openModal('detail', m);
-                      setShowSearchDropdown(false);
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      padding: '8px 10px',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      transition: 'background 0.2s',
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  >
-                    <img src={m.poster} alt={m.title} style={{ width: '32px', height: '48px', objectFit: 'cover', borderRadius: '4px' }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.title}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{m.year} • {m.genres[0]} • ⭐ {m.rating}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {notifications.map(n => (
+                    <div key={n.id} style={{ background: 'rgba(255,255,255,0.04)', padding: '10px', borderRadius: '8px' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>{n.title}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '2px' }}>{n.message}</div>
+                      {n.actionRoomId && (
+                        <button 
+                          className="btn btn-party"
+                          onClick={() => { joinRoom(n.actionRoomId); setShowNotifications(false); }}
+                          style={{ padding: '4px 10px', fontSize: '0.75rem', marginTop: '6px' }}
+                        >
+                          Join Party 🍿
+                        </button>
+                      )}
                     </div>
-                    <span className="badge-4k" style={{ fontSize: '0.65rem' }}>{formatPrice(m.buyPrice)}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
-          {/* TMDB API Status / Switcher Button */}
-          <button 
-            className="btn btn-glass"
-            style={{ padding: '6px 12px', fontSize: '0.8rem', gap: '6px' }}
-            onClick={() => openModal('tmdbConfig')}
-            title="Configure TMDB API Key & Mode"
-          >
-            <Key size={14} color={isLiveTmdb ? "#10b981" : "#f59e0b"} />
-            <span>{isLiveTmdb ? 'TMDB Live' : 'Curated 4K'}</span>
-          </button>
-
-          {/* Currency Switcher */}
-          <div style={{ position: 'relative' }}>
-            <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                color: '#f8fafc',
-                padding: '6px 10px',
-                borderRadius: '8px',
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-                outline: 'none'
-              }}
-            >
-              {Object.keys(CURRENCIES).map((curr) => (
-                <option key={curr} value={curr} style={{ background: '#0d1017', color: '#fff' }}>
-                  {CURRENCIES[curr].label}
-                </option>
-              ))}
-            </select>
+          {/* User Profile */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '4px 12px 4px 4px', borderRadius: '30px' }}>
+            <img 
+              src={currentUser.avatarUrl} 
+              alt={currentUser.displayName}
+              style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover' }}
+            />
+            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{currentUser.displayName.split(' ')[0]}</span>
           </div>
 
-          {/* Sound Toggle */}
-          <button
-            className="btn-icon"
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            title={soundEnabled ? "Mute UI Sound Effects" : "Enable Cinema Sound FX"}
+          {/* Primary CTA: Create Watch Party */}
+          <button 
+            className="btn btn-party"
+            onClick={() => setModals(prev => ({ ...prev, createRoom: true }))}
+            style={{ padding: '8px 18px', fontSize: '0.9rem' }}
           >
-            {soundEnabled ? <Volume2 size={18} color="#e50914" /> : <VolumeX size={18} color="#64748b" />}
-          </button>
-
-          {/* My Vault (Purchased & Rentals) Button */}
-          <button
-            className="btn btn-glass"
-            onClick={() => openModal('vault', { defaultTab: 'library' })}
-            style={{ position: 'relative', padding: '8px 14px' }}
-            title="My Digital Vault & Purchases"
-          >
-            <Bookmark size={16} color="#f59e0b" />
-            <span style={{ fontSize: '0.85rem' }}>My Vault</span>
-            {totalVaultCount > 0 && (
-              <span 
-                style={{
-                  background: '#f59e0b',
-                  color: '#000',
-                  fontSize: '0.65rem',
-                  fontWeight: 800,
-                  padding: '2px 6px',
-                  borderRadius: '10px'
-                }}
-              >
-                {totalVaultCount}
-              </span>
-            )}
-          </button>
-
-          {/* Shopping Cart Button */}
-          <button
-            className="btn btn-primary"
-            onClick={() => openModal('checkout')}
-            style={{ position: 'relative', padding: '8px 16px' }}
-            title="Shopping Cart & Checkout"
-          >
-            <ShoppingBag size={18} />
-            <span style={{ fontSize: '0.85rem' }}>Cart</span>
-            {totalCartCount > 0 && (
-              <span className="cart-badge-count">{totalCartCount}</span>
-            )}
+            <Plus size={16} />
+            <span>Create Room</span>
           </button>
         </div>
       </div>

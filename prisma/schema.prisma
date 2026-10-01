@@ -1,0 +1,218 @@
+// Prisma Schema for WatchTogether Social Watch Party Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  username      String         @unique
+  displayName   String
+  passwordHash  String?
+  avatarUrl     String?
+  role          String         @default("USER") // USER, ADMIN, MODERATOR
+  bio           String?
+  isOnline      Boolean        @default(false)
+  lastSeenAt    DateTime       @default(now())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  profile       Profile?
+  hostedRooms   Room[]         @relation("HostRooms")
+  participants  RoomParticipant[]
+  messages      Message[]
+  friendships   Friendship[]   @relation("UserFriendships")
+  friendOf      Friendship[]   @relation("FriendOfUser")
+  watchlist     Watchlist[]
+  watchHistory  WatchHistory[]
+  notifications Notification[]
+  reportsFiled  Report[]       @relation("ReporterUser")
+  reportsAgainst Report[]      @relation("ReportedUser")
+
+  @@index([username])
+  @@index([email])
+}
+
+model Profile {
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  allowFriendRequests  Boolean  @default(true)
+  allowRoomInvites     Boolean  @default(true)
+  showOnlineStatus     Boolean  @default(true)
+  showActiveRoom       Boolean  @default(true)
+  theme                String   @default("cinema-dark")
+  updatedAt            DateTime @updatedAt
+}
+
+model Friendship {
+  id          String   @id @default(uuid())
+  userId      String
+  friendId    String
+  user        User     @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friend      User     @relation("FriendOfUser", fields: [friendId], references: [id], onDelete: Cascade)
+  status      String   @default("PENDING") // PENDING, ACCEPTED, BLOCKED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, friendId])
+  @@index([userId])
+  @@index([friendId])
+}
+
+model Room {
+  id              String            @id @default(uuid())
+  name            String
+  code            String            @unique
+  hostId          String
+  host            User              @relation("HostRooms", fields: [hostId], references: [id])
+  privacy         String            @default("PUBLIC") // PUBLIC, FRIENDS_ONLY, PRIVATE
+  passwordHash    String?
+  maxParticipants Int               @default(25)
+  isLocked        Boolean           @default(false)
+  isActive        Boolean           @default(true)
+  
+  // Current media state
+  movieTitle      String?
+  movieId         String?
+  moviePoster     String?
+  movieBackdrop   String?
+  providerName    String?
+  playbackMode    String            @default("SCREEN_SHARE") // SCREEN_SHARE, EMBEDDED, EXTERNAL
+  isScreenSharing Boolean           @default(false)
+  
+  // Feature flags
+  voiceEnabled    Boolean           @default(true)
+  chatEnabled     Boolean           @default(true)
+  reactionsEnabled Boolean          @default(true)
+  allowGuestsToSpeak Boolean        @default(true)
+
+  createdAt       DateTime          @default(now())
+  endedAt         DateTime?
+  
+  participants    RoomParticipant[]
+  messages        Message[]
+  polls           Poll[]
+  reports         Report[]
+
+  @@index([code])
+  @@index([hostId])
+}
+
+model RoomParticipant {
+  id           String    @id @default(uuid())
+  roomId       String
+  userId       String
+  room         Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role         String    @default("MEMBER") // HOST, MODERATOR, MEMBER
+  isMuted      Boolean   @default(false)
+  isDeafened   Boolean   @default(false)
+  isSpeaking   Boolean   @default(false)
+  joinedAt     DateTime  @default(now())
+  leftAt       DateTime?
+
+  @@unique([roomId, userId])
+  @@index([roomId])
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  roomId      String
+  userId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content     String
+  type        String   @default("TEXT") // TEXT, SYSTEM, ACTION
+  replyToId   String?
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([roomId])
+  @@index([createdAt])
+}
+
+model Poll {
+  id          String       @id @default(uuid())
+  roomId      String
+  room        Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  question    String
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  options     PollOption[]
+
+  @@index([roomId])
+}
+
+model PollOption {
+  id          String   @id @default(uuid())
+  pollId      String
+  poll        Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  text        String
+  votesCount  Int      @default(0)
+}
+
+model Watchlist {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movieId     String
+  title       String
+  posterUrl   String?
+  mediaType   String   @default("MOVIE") // MOVIE, SHOW, VIDEO
+  rating      Float?
+  year        Int?
+  addedAt     DateTime @default(now())
+
+  @@unique([userId, movieId])
+  @@index([userId])
+}
+
+model WatchHistory {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roomTitle     String
+  movieId       String?
+  movieTitle    String
+  moviePoster   String?
+  providerName  String?
+  durationMin   Int      @default(0)
+  watchedAt     DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  message     String
+  type        String   @default("INFO") // INVITE, FRIEND_REQUEST, SYSTEM
+  actionUrl   String?
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Report {
+  id             String   @id @default(uuid())
+  reporterId     String
+  reportedUserId String?
+  roomId         String?
+  reporter       User     @relation("ReporterUser", fields: [reporterId], references: [id])
+  reportedUser   User?    @relation("ReportedUser", fields: [reportedUserId], references: [id])
+  room           Room?    @relation(fields: [roomId], references: [id])
+  reason         String
+  details        String?
+  status         String   @default("OPEN") // OPEN, RESOLVED, DISMISSED
+  createdAt      DateTime @default(now())
+}

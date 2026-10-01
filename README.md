@@ -1,102 +1,118 @@
-# CineVault — Interactive 4K Ultra HD Movie Store & Streaming Platform
+# WatchTogether — Production-Grade Social Watch Party Platform
 
-![CineVault Banner](https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1600&auto=format&fit=crop)
+![WatchTogether Banner](https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1600&auto=format&fit=crop)
 
-**CineVault** is a modern, interactive movie streaming and digital purchase platform built with React, Vite, and high-fidelity Vanilla CSS. It provides digital ownership purchases (4K UHD), 48-hour weekend rentals, an interactive trailer theater with ambient dimming lights, TMDB API live sync, user reviews, and personal digital vault storage.
-
----
-
-## 🌟 Key Features
-
-### 1. 🎬 Cinematic Spotlight & Hero Carousel
-- High-impact dynamic hero banner with 4K UHD badges, Rotten Tomatoes match score, IMDb ratings, age ratings, and audio spec indicators (Dolby Vision, Dolby Atmos 7.1.4, IMAX Enhanced).
-- Direct "Watch 4K Trailer", "Buy 4K UHD", "Rent HD", and "Add to Watchlist" actions.
-- Interactive thumbnail carousel with smooth cross-fading backdrop transitions.
-
-### 2. 🍿 Interactive 4K Trailer Theater
-- Built-in video player modal featuring official high-resolution trailers.
-- **Ambient Theater Dimmer Slider**: Dynamically dim the surrounding lights (50% to 100% ambient blackout).
-- **Stream Specs Switcher**: Toggle resolutions (4K UHD 2160p HDR, 1080p FHD, 720p), audio channels (Dolby Atmos 7.1.4, 5.1 Surround, Stereo), and multilingual subtitles.
-
-### 3. 💳 Digital 4K Store & Checkout System
-- Multi-tier store offerings:
-  - **4K UHD Keep-Forever Copy**: Lifetime cloud streaming + bonus features & artbook.
-  - **48-Hour Rental**: Instant 48-hour viewing window with live countdown timer.
-- **Promo Code Discounts**:
-  - `CINE50` — 50% discount on entire cart
-  - `CINEMA2026` / `FREE` — 100% free checkout pass
-  - `VIP30` — 30% VIP member discount
-- Multi-payment simulator (Credit/Debit Card, Apple Pay, Google Pay, CinePass Balance).
-- Realistic animated checkout with confetti celebration and **CineVault Digital Pass Ticket** with QR code and download license certificates.
-
-### 4. 🗄️ My Digital Vault & Personal Library
-- **4K Purchases Library**: Permanent collection of owned movies with instant 4K playback and downloadable `.txt` ownership licenses.
-- **Active Rentals**: Real-time 48-hour rental passes with live ticking countdown timers.
-- **Watchlist**: Quick-access bookmarks stored in `localStorage`.
-
-### 5. 🔍 Discovery Hub, Search & Filters
-- Real-time instant search bar with autocomplete dropdown and `/` keyboard shortcut.
-- Filter by Genre chips (Sci-Fi, Action, Drama, Horror, Animation, Thriller, Crime, etc.).
-- Filter by minimum IMDb score slider (7.0+, 8.0+, 8.5+).
-- Filter by release year and digital format (4K UHD, Dolby Atmos, Weekend Deals).
-- Sort by Popularity, Highest Rated, Price (Low/High), Newest, or Title (A-Z).
-- Switch between **Grid View** and **Compact List View**.
-
-### 6. 🌐 TMDB Live API & Curated 4K Mode
-- Built-in rich offline database of 50+ blockbusters with trailers, cast headshots, and technical specs for instant offline performance.
-- Seamless **TMDB Live API Switcher Modal**: Plug in any TMDB API key to search and stream 800,000+ live movies.
-
-### 7. 🔊 Web Audio API Cinema Sound Effects
-- Interactive synthesized UI sound effects (cinema sub-bass rumble, clicks, and purchase fanfare) with a master sound toggle in the header.
-
-### 8. 💱 Multi-Currency Converter
-- Switch currencies on the fly: USD ($), EUR (€), GBP (£), INR (₹), JPY (¥).
+> **"One Screen. Many Friends. One Experience."**
+> 
+> *Search what you want to watch, create a room, invite your friends, share your screen, and experience it together in real time.*
 
 ---
 
-## 🚀 Getting Started
+## 🌟 Executive Summary
+
+**WatchTogether** is a real-time social watch party platform engineered for friends to stream content together across remote locations. Built with a modern cinematic aesthetic (Netflix-inspired UI meets Discord-style voice and text communication), WatchTogether leverages standard browser **Screen Capture API (`navigator.mediaDevices.getDisplayMedia`)**, **WebRTC**, and **Socket.IO** for ultra-low-latency synchronization.
+
+---
+
+## 🏗️ System Architecture
+
+```text
+┌───────────────────────────────┐
+│          Host Browser         │
+│   (Screen Capture + Mic Audio)│
+└──────────────┬────────────────┘
+               │
+               │ 1. WebRTC MediaStream (Video/Audio)
+               ▼
+┌───────────────────────────────┐        ┌───────────────────────────────┐
+│     LiveKit / SFU Relay       ├───────►│      Connected Friends        │
+│    (Scalable Media Mesh)      │        │    (Screen Stream + Voice)    │
+└───────────────────────────────┘        └──────────────┬────────────────┘
+                                                        │
+┌───────────────────────────────┐                       │ 2. Chat / Reactions / Polls
+│    Node.js + Socket.IO Server │◄──────────────────────┘
+│    (Express + PostgreSQL)     │
+└───────────────────────────────┘
+```
+
+---
+
+## 🚀 Key Features
+
+### 1. 🔎 Legitimate Metadata Discovery & Movie Search
+- Prominent search bar on the landing page with **300ms debounced live autocomplete**.
+- Search across Movies, TV Series, and Live Watch Parties (e.g., *Avengers: Endgame*, *Stranger Things*, *Dune: Part Two*).
+- Instant action buttons: `[ View Details ]`, `[ + Watchlist ]`, and `[ Create Watch Party 🍿 ]`.
+
+### 2. 🍿 Virtual Watch Room (`/room/:roomId`)
+- **Shared Screen Viewport**: Broadcasts the host's screen with user-authorized browser permissions and theater dimming controls.
+- **Floating Live Reactions**: Floating emoji particles (❤️ 😂 😱 🔥 👏 🍿 😍) that float upward across the video stream with realistic physics.
+- **Live Voice Chat**: WebRTC voice channels with **speaking indicator halos** (glowing green avatar rings detecting microphone activity).
+- **Live Text Chat**: Real-time Socket.IO messaging with typing indicators, emoji reactions, reply threading, and host moderation deletion.
+- **Interactive Party Games & Polls**:
+  - *"What should we watch?"* live group movie voting with real-time percentage bars.
+  - Cinema Trivia quiz challenge with live scoreboard.
+- **Host Controls**: Screen sharing start/stop, room locking, participant mute, and participant kick.
+
+### 3. 👥 Social System & Friends
+- Search users, send friend requests, accept/reject invites.
+- Real-time online presence and *"Friends Watching Now"* activity ticker (e.g., *"Rahul is watching Avengers: Endgame [Join Party]"*).
+
+### 4. 🗄️ Watchlist & History
+- `/watchlist`: Bookmark movies and shows to launch watch parties with one click.
+- `/history`: Chronological watch logs with duration, provider, and participant squad lists.
+
+### 5. 🛡️ Admin & Moderation Hub
+- `/admin`: Real-time system health metrics, active room monitor with force-termination capability, and user moderation logs.
+
+---
+
+## 🔒 Legal & Compliance Policy
+
+WatchTogether is **NOT** a streaming piracy platform:
+- ❌ Does not download, rehost, or distribute copyrighted video files.
+- ❌ Does not bypass DRM or content protection.
+- ❌ Does not scrape protected subscription services.
+- ✅ Media synchronization operates via **user-authorized browser screen sharing**. Users use their own legitimate accounts and share their screen with friends.
+
+---
+
+## 💻 Getting Started Locally
 
 ### Prerequisites
 - Node.js (v18 or higher)
 - npm
 
-### Installation & Running Locally
+### 1. Installation
+```bash
+git clone https://github.com/jamparangisruthi-design/movie-store-.git
+cd movie-store-
+npm install
+```
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/jamparangisruthi-design/movie-store-.git
-   cd movie-store-
-   ```
+### 2. Run Backend Server & Socket.IO (Port 5000)
+```bash
+npm run server
+```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+### 3. Run Frontend Development Server (Port 3000)
+```bash
+npm run dev
+```
 
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-
-4. Open your browser and navigate to:
-   ```
-   http://localhost:3000/
-   ```
-
-5. To build for production:
-   ```bash
-   npm run build
-   ```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🛠️ Tech Stack
-- **Framework**: React 19 + Vite 6
-- **Styling**: Vanilla CSS3 (Custom Properties, Glassmorphism, CSS Grid & Flexbox, Ambient Glows)
-- **Icons**: Lucide React
-- **Celebration Effects**: Canvas Confetti
-- **Audio**: Web Audio API Synthesizer
-- **Data & API**: TMDB API + Curated 4K Master Dataset
+## 🛠️ Technology Stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 19, Vite, TypeScript/JSX, Vanilla CSS Custom Properties |
+| **Icons & FX** | Lucide React, Canvas Confetti, Web Audio API |
+| **Real-Time Communication** | Socket.IO Client, WebRTC MediaStream, Browser Screen Capture API |
+| **Backend** | Node.js, Express, Socket.IO Server, CORS, Dotenv |
+| **Database ORM** | PostgreSQL + Prisma Schema (`prisma/schema.prisma`) |
 
 ---
 
