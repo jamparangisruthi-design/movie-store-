@@ -7,6 +7,7 @@ import moviesRouter from './routes/movies.routes.js';
 import roomsRouter from './routes/rooms.routes.js';
 import friendsRouter from './routes/friends.routes.js';
 import adminRouter from './routes/admin.routes.js';
+import cinehdRouter from './routes/cinehd.routes.js';
 import { initSocketHandler } from './socket/socketHandler.js';
 
 dotenv.config();
@@ -31,6 +32,7 @@ app.use('/api/movies', moviesRouter);
 app.use('/api/rooms', roomsRouter);
 app.use('/api/friends', friendsRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/cinehd', cinehdRouter);
 
 // Health Check API
 app.get('/api/health', (req, res) => {

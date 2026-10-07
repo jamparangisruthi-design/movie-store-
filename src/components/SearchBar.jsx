@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useWatchParty } from '../context/WatchPartyContext';
+import { searchTMDB } from '../services/tmdb';
 import { 
   Search, 
   Film, 
@@ -21,12 +22,16 @@ export const SearchBar = ({ autoFocus = false, isHero = true }) => {
     setModals, 
     toggleWatchlist, 
     watchlist,
-    joinRoom
+    joinRoom,
+    searchMovies,
+    tmdbLoading
   } = useWatchParty();
 
   const [inputValue, setInputValue] = useState(searchQuery);
   const [showDropdown, setShowDropdown] = useState(false);
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [dropdownResults, setDropdownResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   const containerRef = useRef(null);
 
   // 300ms debounce
@@ -37,6 +42,36 @@ export const SearchBar = ({ autoFocus = false, isHero = true }) => {
     }, 300);
     return () => clearTimeout(handler);
   }, [inputValue, setSearchQuery]);
+
+  // Fetch live TMDB results for the dropdown
+  useEffect(() => {
+    if (!debouncedQuery) {
+      setDropdownResults([]);
+      return;
+    }
+    let cancelled = false;
+    const fetchDropdown = async () => {
+      setIsSearching(true);
+      try {
+        const results = await searchTMDB(debouncedQuery);
+        if (!cancelled) setDropdownResults(results.slice(0, 5));
+      } catch {
+        // Fallback to local movie filter
+        if (!cancelled) {
+          setDropdownResults(
+            movies.filter(m =>
+              m.title.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+              m.genres.some(g => g.toLowerCase().includes(debouncedQuery.toLowerCase()))
+            ).slice(0, 5)
+          );
+        }
+      } finally {
+        if (!cancelled) setIsSearching(false);
+      }
+    };
+    fetchDropdown();
+    return () => { cancelled = true; };
+  }, [debouncedQuery, movies]);
 
   // Handle outside clicks to close dropdown
   useEffect(() => {
@@ -57,11 +92,12 @@ export const SearchBar = ({ autoFocus = false, isHero = true }) => {
       ).slice(0, 4)
     : [];
 
-  const handleSearchSubmit = (e) => {
+  const handleSearchSubmit = async (e) => {
     e.preventDefault();
     if (inputValue.trim()) {
       setSearchQuery(inputValue.trim());
       setShowDropdown(false);
+      if (searchMovies) await searchMovies(inputValue.trim());
       setCurrentView('search');
     }
   };
@@ -116,11 +152,14 @@ export const SearchBar = ({ autoFocus = false, isHero = true }) => {
       {showDropdown && debouncedQuery && (
         <div className="search-suggestions-dropdown">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', borderBottom: '1px solid rgba(255,255,255,0.08)', fontSize: '0.8rem', color: '#94a3b8' }}>
-            <span>Search Results for "{debouncedQuery}"</span>
+            <span>
+              {isSearching ? '🔍 Searching TMDB...' : `Search Results for "${debouncedQuery}"`}
+            </span>
             <span 
               style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 700 }}
               onClick={() => {
                 setShowDropdown(false);
+                if (searchMovies) searchMovies(debouncedQuery);
                 setCurrentView('search');
               }}
             >
@@ -128,12 +167,17 @@ export const SearchBar = ({ autoFocus = false, isHero = true }) => {
             </span>
           </div>
 
-          {searchResults.length === 0 ? (
+          {isSearching ? (
+            <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>
+              <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Loading from TMDB...
+            </div>
+          ) : dropdownResults.length === 0 ? (
             <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>
               No matches found for "{debouncedQuery}". Press Enter to view full catalog search.
             </div>
           ) : (
-            searchResults.map(movie => {
+            dropdownResults.map(movie => {
+
               const inWatchlist = watchlist.includes(movie.id);
               return (
                 <div key={movie.id} className="suggestion-card">

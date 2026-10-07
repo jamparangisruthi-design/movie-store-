@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWatchParty } from '../context/WatchPartyContext';
-import { Search, Star, Plus, Check, Tv, Film, Compass, Users, Sparkles, Filter } from 'lucide-react';
+import { Search, Star, Plus, Check, Tv, Film, Compass, Users, Sparkles, Filter, Play } from 'lucide-react';
 import { SearchBar } from './SearchBar';
 
 export const SearchResultsPage = () => {
@@ -12,12 +12,23 @@ export const SearchResultsPage = () => {
     searchFilterTab, 
     setSearchFilterTab,
     setModals,
+    openWatchPlayer,
     toggleWatchlist,
     watchlist,
-    joinRoom
+    joinRoom,
+    searchMovies,
+    tmdbLoading
   } = useWatchParty();
 
   const [activeTab, setActiveTab] = useState(searchFilterTab || 'all');
+
+  // Trigger live TMDB search when landing on this page with a query
+  useEffect(() => {
+    if (searchQuery && searchMovies) {
+      searchMovies(searchQuery);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filteredMovies = movies.filter(m => {
     if (!searchQuery.trim()) return true;
@@ -174,13 +185,21 @@ export const SearchResultsPage = () => {
                     </div>
 
                     {/* Action CTAs */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '180px' }} onClick={(e) => e.stopPropagation()}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '180px' }} onClick={(e) => e.stopPropagation()}>
                       <button 
                         className="btn btn-party"
-                        onClick={() => setModals(prev => ({ ...prev, createRoom: true, selectedContentForParty: movie }))}
-                        style={{ width: '100%', padding: '10px 16px', fontSize: '0.9rem' }}
+                        onClick={() => openWatchPlayer(movie)}
+                        style={{ width: '100%', padding: '10px 16px', fontSize: '0.9rem', background: 'linear-gradient(135deg, #e50914 0%, #b91c1c 100%)', boxShadow: '0 4px 12px rgba(229,9,20,0.3)' }}
                       >
-                        <Tv size={16} /> Create Watch Party
+                        <Play size={16} fill="#fff" /> Watch Now 🎬
+                      </button>
+
+                      <button 
+                        className="btn btn-glass"
+                        onClick={() => setModals(prev => ({ ...prev, createRoom: true, selectedContentForParty: movie }))}
+                        style={{ width: '100%', padding: '8px 12px', fontSize: '0.85rem' }}
+                      >
+                        <Tv size={15} /> Create Watch Party
                       </button>
 
                       <div style={{ display: 'flex', gap: '8px' }}>

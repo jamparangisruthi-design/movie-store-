@@ -3,18 +3,21 @@ import { useWatchParty } from './context/WatchPartyContext';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { TrendingSection } from './components/TrendingSection';
+import { CineHDSection } from './components/CineHDSection';
 import { PopularRoomsSection } from './components/PopularRoomsSection';
 import { FriendsWatchingSection } from './components/FriendsWatchingSection';
 import { HowItWorksSection } from './components/HowItWorksSection';
 import { SearchResultsPage } from './components/SearchResultsPage';
 import { WatchlistPage } from './components/WatchlistPage';
 import { HistoryPage } from './components/HistoryPage';
+import { NewsAndEventsPage } from './components/NewsAndEventsPage';
 import { WatchRoom } from './components/WatchRoom';
 import { MovieDetailsModal } from './components/MovieDetailsModal';
 import { CreateRoomModal } from './components/CreateRoomModal';
 import { ShareInviteModal } from './components/ShareInviteModal';
 import { FriendsModal } from './components/FriendsModal';
 import { AdminDashboardModal } from './components/AdminDashboardModal';
+import { WatchPlayerModal } from './components/WatchPlayerModal';
 import { Footer } from './components/Footer';
 import { ToastContainer } from './components/ToastContainer';
 
@@ -27,6 +30,7 @@ export const App = () => {
       <>
         <WatchRoom />
         <ShareInviteModal />
+        <WatchPlayerModal />
         <ToastContainer />
       </>
     );
@@ -43,6 +47,7 @@ export const App = () => {
           <>
             <HeroSection />
             <TrendingSection />
+            <CineHDSection />
             <PopularRoomsSection />
             <FriendsWatchingSection />
             <HowItWorksSection />
@@ -50,6 +55,7 @@ export const App = () => {
         )}
 
         {currentView === 'search' && <SearchResultsPage />}
+        {currentView === 'news' && <NewsAndEventsPage />}
         {currentView === 'watchlist' && <WatchlistPage />}
         {currentView === 'history' && <HistoryPage />}
       </main>
@@ -59,6 +65,7 @@ export const App = () => {
 
       {/* Modals & Overlays */}
       <MovieDetailsModal />
+      <WatchPlayerModal />
       <CreateRoomModal />
       <ShareInviteModal />
       <FriendsModal />

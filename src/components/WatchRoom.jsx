@@ -29,6 +29,8 @@ import {
   Smile
 } from 'lucide-react';
 
+import { getTmdbId } from './WatchPlayerModal';
+
 export const WatchRoom = () => {
   const { 
     currentRoom, 
@@ -47,7 +49,8 @@ export const WatchRoom = () => {
     voiceState, 
     toggleMicrophone, 
     toggleDeafen, 
-    setModals, 
+    setModals,
+    openWatchPlayer,
     activePoll, 
     createPoll, 
     votePoll, 
@@ -62,6 +65,7 @@ export const WatchRoom = () => {
   const [activeSidebarTab, setActiveSidebarTab] = useState('chat'); // 'chat' | 'participants' | 'games'
   const [messageInput, setMessageInput] = useState('');
   const [theaterDim, setTheaterDim] = useState(0.9);
+  const [isEmbedPlaying, setIsEmbedPlaying] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [newPollQuestion, setNewPollQuestion] = useState('');
   const [newPollOpts, setNewPollOpts] = useState(['Avengers: Endgame', 'Dune: Part Two', 'Stranger Things']);
@@ -241,7 +245,36 @@ export const WatchRoom = () => {
           </div>
 
           {/* Screen Content */}
-          {screenStream || isScreenSharing ? (
+          {isEmbedPlaying && currentRoom.movie ? (
+            <div style={{ position: 'relative', width: '100%', height: '100%', background: '#000' }}>
+              <iframe
+                src={`https://www.2embed.cc/embed/${getTmdbId(currentRoom.movie)}`}
+                title={currentRoom.movie.title}
+                style={{ width: '100%', height: '100%', border: 'none' }}
+                allowFullScreen
+                allow="autoplay; encrypted-media; gyroscope; picture-in-picture; accelerometer"
+              />
+              <button 
+                onClick={() => setIsEmbedPlaying(false)}
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  zIndex: 40,
+                  background: 'rgba(0,0,0,0.85)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  color: '#fff',
+                  padding: '6px 14px',
+                  borderRadius: '20px',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                ✕ Close Embed Stream
+              </button>
+            </div>
+          ) : screenStream || isScreenSharing ? (
             <video
               ref={videoRef}
               autoPlay
@@ -264,19 +297,30 @@ export const WatchRoom = () => {
                 />
                 <h3 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#fff' }}>{currentRoom.movie.title}</h3>
                 <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '6px', marginBottom: '20px' }}>
-                  {isHost ? "You are the host. Click below to start broadcasting your browser screen." : "Waiting for the host to start screen sharing..."}
+                  Choose how to watch: Play the embedded stream directly inside this room or share your screen.
                 </p>
 
-                {isHost && (
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <button 
                     className="btn btn-party"
-                    onClick={toggleScreenShare}
-                    style={{ padding: '12px 28px', fontSize: '1.05rem', gap: '8px' }}
+                    onClick={() => setIsEmbedPlaying(true)}
+                    style={{ padding: '12px 24px', fontSize: '1rem', gap: '8px', background: 'linear-gradient(135deg, #e50914 0%, #b91c1c 100%)', boxShadow: '0 0 20px rgba(229,9,20,0.4)' }}
                   >
-                    <Tv size={18} />
-                    <span>Start Screen Sharing</span>
+                    <Play size={18} fill="#fff" />
+                    <span>Play Embedded Movie 🎬</span>
                   </button>
-                )}
+
+                  {isHost && (
+                    <button 
+                      className="btn btn-glass"
+                      onClick={toggleScreenShare}
+                      style={{ padding: '12px 20px', fontSize: '0.95rem', gap: '8px' }}
+                    >
+                      <Tv size={18} />
+                      <span>Start Screen Share</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ) : (

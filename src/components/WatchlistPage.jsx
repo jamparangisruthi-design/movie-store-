@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useWatchParty } from '../context/WatchPartyContext';
-import { Bookmark, Star, Tv, Trash2, Film, Plus } from 'lucide-react';
+import { Bookmark, Star, Tv, Trash2, Film, Plus, Play } from 'lucide-react';
 
 export const WatchlistPage = () => {
-  const { watchlist, toggleWatchlist, movies, setModals } = useWatchParty();
+  const { watchlist, toggleWatchlist, movies, setModals, openWatchPlayer } = useWatchParty();
   const [filterType, setFilterType] = useState('all');
 
   const watchlistMovies = movies.filter(m => watchlist.includes(m.id));
@@ -80,22 +80,32 @@ export const WatchlistPage = () => {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <button 
                     className="btn btn-party"
-                    onClick={() => setModals(prev => ({ ...prev, createRoom: true, selectedContentForParty: movie }))}
-                    style={{ flex: 1, padding: '8px', fontSize: '0.85rem' }}
+                    onClick={() => openWatchPlayer(movie)}
+                    style={{ width: '100%', padding: '8px', fontSize: '0.85rem', background: 'linear-gradient(135deg, #e50914 0%, #b91c1c 100%)' }}
                   >
-                    <Tv size={14} /> Host Party
+                    <Play size={14} fill="#fff" /> Watch Now 🎬
                   </button>
-                  <button 
-                    className="btn btn-glass"
-                    onClick={() => toggleWatchlist(movie)}
-                    style={{ padding: '8px 10px', color: '#ef4444' }}
-                    title="Remove from Watchlist"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button 
+                      className="btn btn-glass"
+                      onClick={() => setModals(prev => ({ ...prev, createRoom: true, selectedContentForParty: movie }))}
+                      style={{ flex: 1, padding: '6px', fontSize: '0.8rem' }}
+                    >
+                      <Tv size={13} /> Host Party
+                    </button>
+                    <button 
+                      className="btn btn-glass"
+                      onClick={() => toggleWatchlist(movie)}
+                      style={{ padding: '6px 10px', color: '#ef4444' }}
+                      title="Remove from Watchlist"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

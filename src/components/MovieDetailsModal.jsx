@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export const MovieDetailsModal = () => {
-  const { modals, setModals, toggleWatchlist, watchlist, showToast } = useWatchParty();
+  const { modals, setModals, openWatchPlayer, toggleWatchlist, watchlist, showToast } = useWatchParty();
 
   if (!modals.movieDetails) return null;
   const movie = modals.movieDetails;
@@ -94,14 +94,25 @@ export const MovieDetailsModal = () => {
               )}
             </div>
 
-            <button 
-              className="btn btn-party"
-              onClick={handleCreateParty}
-              style={{ padding: '12px 24px', fontSize: '1rem', gap: '8px' }}
-            >
-              <Tv size={18} />
-              <span>Create Watch Party 🍿</span>
-            </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                className="btn btn-party"
+                onClick={() => openWatchPlayer(movie)}
+                style={{ padding: '12px 24px', fontSize: '1rem', gap: '8px', background: 'linear-gradient(135deg, #e50914 0%, #b91c1c 100%)', boxShadow: '0 0 20px rgba(229,9,20,0.4)' }}
+              >
+                <Play size={18} fill="#fff" />
+                <span>Watch Now 🎬</span>
+              </button>
+
+              <button 
+                className="btn btn-glass"
+                onClick={handleCreateParty}
+                style={{ padding: '12px 20px', fontSize: '0.95rem', gap: '8px' }}
+              >
+                <Tv size={18} />
+                <span>Create Watch Party 🍿</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -109,6 +120,14 @@ export const MovieDetailsModal = () => {
         <div style={{ padding: '28px 32px' }}>
           {/* Quick Actions Bar */}
           <div style={{ display: 'flex', gap: '12px', marginBottom: '28px', flexWrap: 'wrap' }}>
+            <button 
+              className="btn btn-party"
+              onClick={() => openWatchPlayer(movie)}
+              style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #e50914 0%, #b91c1c 100%)' }}
+            >
+              <Play size={16} fill="#fff" /> Watch Movie Now
+            </button>
+
             <button 
               className="btn btn-party"
               onClick={handleCreateParty}

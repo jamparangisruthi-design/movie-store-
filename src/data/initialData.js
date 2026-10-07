@@ -3,6 +3,8 @@
 export const INITIAL_MOVIES = [
   {
     id: "mv-avengers-endgame",
+    tmdbId: 299534,
+    mediaType: "movie",
     title: "Avengers: Endgame",
     tagline: "Part of the journey is the end.",
     year: 2019,
@@ -31,6 +33,8 @@ export const INITIAL_MOVIES = [
   },
   {
     id: "mv-the-avengers",
+    tmdbId: 24428,
+    mediaType: "movie",
     title: "The Avengers",
     tagline: "Some assembly required.",
     year: 2012,
@@ -53,6 +57,8 @@ export const INITIAL_MOVIES = [
   },
   {
     id: "mv-avengers-infinity-war",
+    tmdbId: 299536,
+    mediaType: "movie",
     title: "Avengers: Infinity War",
     tagline: "An entire universe. Once and for all.",
     year: 2018,
@@ -74,6 +80,8 @@ export const INITIAL_MOVIES = [
   },
   {
     id: "mv-stranger-things",
+    tmdbId: 66732,
+    mediaType: "tv",
     title: "Stranger Things",
     tagline: "Every ending has a beginning.",
     year: 2022,
@@ -96,6 +104,8 @@ export const INITIAL_MOVIES = [
   },
   {
     id: "mv-dune-2",
+    tmdbId: 693134,
+    mediaType: "movie",
     title: "Dune: Part Two",
     tagline: "Long live the fighters.",
     year: 2024,
@@ -118,6 +128,8 @@ export const INITIAL_MOVIES = [
   },
   {
     id: "mv-interstellar",
+    tmdbId: 157336,
+    mediaType: "movie",
     title: "Interstellar",
     tagline: "Mankind was born on Earth. It was never meant to die here.",
     year: 2014,
@@ -139,6 +151,8 @@ export const INITIAL_MOVIES = [
   },
   {
     id: "mv-spider-verse",
+    tmdbId: 569094,
+    mediaType: "movie",
     title: "Spider-Man: Across the Spider-Verse",
     tagline: "It's how you wear the mask that matters.",
     year: 2023,

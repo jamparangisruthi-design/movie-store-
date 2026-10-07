@@ -75,6 +75,13 @@ export const Navbar = () => {
             Discover
           </span>
           <span 
+            className={`nav-link ${currentView === 'news' ? 'active' : ''}`}
+            onClick={() => setCurrentView('news')}
+            style={{ color: currentView === 'news' ? '#ffd734' : 'inherit' }}
+          >
+            News &amp; Events
+          </span>
+          <span 
             className={`nav-link ${currentView === 'watchlist' ? 'active' : ''}`}
             onClick={() => setCurrentView('watchlist')}
           >

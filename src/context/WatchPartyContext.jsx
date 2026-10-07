@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { getSocket } from '../services/socket';
 import { webrtcService } from '../services/webrtc';
 import { playSoundEffect } from '../services/sound';
+import { fetchTrending, searchTMDB } from '../services/tmdb';
 import { INITIAL_MOVIES, INITIAL_ROOMS, INITIAL_FRIENDS } from '../data/initialData.js';
 
 const WatchPartyContext = createContext();
@@ -34,6 +35,7 @@ export const WatchPartyProvider = ({ children }) => {
 
   // Data Collections
   const [movies, setMovies] = useState(INITIAL_MOVIES);
+  const [tmdbLoading, setTmdbLoading] = useState(true);
   const [activeRooms, setActiveRooms] = useState(INITIAL_ROOMS);
   const [friends, setFriends] = useState(INITIAL_FRIENDS);
 
@@ -108,6 +110,7 @@ export const WatchPartyProvider = ({ children }) => {
     createRoom: false,
     movieDetails: null, // Movie object
     shareInvite: null,  // Room object
+    watchPlayer: null,  // Movie object for playing
     friends: false,
     admin: false,
     selectedContentForParty: null
@@ -140,6 +143,26 @@ export const WatchPartyProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('wt_history', JSON.stringify(watchHistory));
   }, [watchHistory]);
+
+  // ── TMDB: Load real trending data on startup ──────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    const loadTrending = async () => {
+      setTmdbLoading(true);
+      try {
+        const tmdbMovies = await fetchTrending('week');
+        if (!cancelled && tmdbMovies && tmdbMovies.length > 0) {
+          setMovies(tmdbMovies);
+        }
+      } catch (err) {
+        console.warn('[TMDB] Using static fallback data.', err);
+      } finally {
+        if (!cancelled) setTmdbLoading(false);
+      }
+    };
+    loadTrending();
+    return () => { cancelled = true; };
+  }, []);
 
   // Socket.IO Event Setup
   useEffect(() => {
@@ -601,12 +624,48 @@ export const WatchPartyProvider = ({ children }) => {
     showToast(isLocked ? 'Room Locked' : 'Room Unlocked', isLocked ? 'New guests cannot enter.' : 'Room is now open.', 'info');
   };
 
+  // TMDB Live Search — replaces movies state with API search results
+  const searchMovies = useCallback(async (query) => {
+    if (!query.trim()) {
+      // Reset to trending when query is cleared
+      setTmdbLoading(true);
+      const trending = await fetchTrending('week').catch(() => null);
+      if (trending && trending.length > 0) setMovies(trending);
+      else setMovies(INITIAL_MOVIES);
+      setTmdbLoading(false);
+      return;
+    }
+    setTmdbLoading(true);
+    try {
+      const results = await searchTMDB(query);
+      if (results && results.length > 0) {
+        setMovies(results);
+      }
+    } catch (err) {
+      console.warn('[TMDB] Search failed, filtering local data.', err);
+    } finally {
+      setTmdbLoading(false);
+    }
+  }, []);
+
+  const openWatchPlayer = (movie) => {
+    playSoundEffect('click');
+    setModals(prev => ({
+      ...prev,
+      movieDetails: null,
+      watchPlayer: movie
+    }));
+  };
+
   const value = {
     currentUser,
     setCurrentUser,
     currentView,
     setCurrentView,
     movies,
+    setMovies,
+    tmdbLoading,
+    searchMovies,
     activeRooms,
     friends,
     currentRoom,
@@ -627,6 +686,7 @@ export const WatchPartyProvider = ({ children }) => {
     setSearchFilterTab,
     modals,
     setModals,
+    openWatchPlayer,
     toasts,
     showToast,
     removeToast,
